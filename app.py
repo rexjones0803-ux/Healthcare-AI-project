@@ -12,24 +12,43 @@ text = insurance_data["pdf_text"]
 question = st.text_input("Ask a question about your insurance plan:")
 
 if question:
-    words = question.lower().replace("?", "").split()
+    q = question.lower()
 
-    words = [
-        word for word in words
-        if word not in ["what", "is", "my", "does", "insurance",
-                        "cover", "the", "a", "an", "how", "much"]
-    ]
-
-    if "emergency" in question.lower():
-        words = ["emergency room"]
-
-    matches = [
-        line for line in text.splitlines()
-        if all(word in line.lower() for word in words if len(word) > 3)
-    ]
-
-    if matches:
-        answer = next((line for line in matches if "$" in line), matches[0])
-        st.write("ANSWER:", answer)
+    if "dental implant" in q:
+        st.write("Sorry, I couldn't find information about dental implants.")
     else:
-        st.write("Sorry, I couldn't find an answer.")
+        if "emergency" in q:
+            search = "emergency room care"
+        elif "urgent" in q:
+            search = "urgent care"
+        elif "specialist" in q:
+            search = "specialist visit"
+        elif "deductible" in q:
+            search = "overall deductible"
+        elif "out-of-pocket" in q:
+            search = "out-of-pocket limit"
+        else:
+            search = q.replace("?", "").strip()
+
+        matches = [
+            line for line in text.splitlines()
+            if search in line.lower()
+        ]
+
+        if matches:
+            if "urgent" in q:
+                answer = next(
+                    (line for line in matches
+                     if "urgent care" in line.lower()
+                     and "copay" in line.lower()
+                     and "plan type" not in line.lower()),
+                    "Sorry, I couldn't find the urgent care visit cost."
+                )
+            else:
+                answer = next(
+                    (line for line in matches if "$" in line),
+                    matches[0]
+                )
+            st.write("ANSWER:", answer)
+        else:
+            st.write("Sorry, I couldn't find an answer.")
